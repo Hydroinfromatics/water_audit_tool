@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h3 class="text-center text-3xl font-semibold text-blue-600 mb-8">Tanks and Capacities</h3>
+    
+    <form method="POST" action='' >
+        {% if details %}
+        <div class="text-center my-2 p-3" style="position: relative;">
+            <a href='{% url "delete_tanks_and_capacities" %}' class="btn btn-danger mb-4 mr-2" style="position: absolute; top: 0; right:0;">Reset</a>
+        </div>
+        {% endif %}
+        {% csrf_token %}
+        {% if details %}
+        <fieldset disabled="disabled" class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl border border-gray-200  form-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {% else %}
+        <fieldset class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl border border-gray-200  form-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        {% endif %}
+            <div class="mb-6">
+                {{ form.tank_name.label_tag }}
+                {{ form.tank_name }}
+                {% if form.tank_name.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.tank_name.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            {% if not details %}           
+            <div class="mb-6">
+                {{ form.tank_source.label_tag }}
+                {{ form.tank_source }}
+                {% if form.tank_source.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.tank_source.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            <div id="other-sources-container" class="mb-6 border border-gray-300 p-2 rounded-lg">
+                <label for="other_sources" class="block text-sm font-medium text-gray-800 mb-2">
+                    Other Water Sources:
+                </label>
+                <button type="button" id="add-source" class="btn btn-info mb-4">Add Source</button>
+                <div id="dynamic-source-fields"></div>
+            </div>
+            {% else %}
+            <div class="bg-gray-100 rounded-lg p-2 mb-6">
+                {{ form.tank_source.label_tag }}
+                {% for source in sources %}
+                <p id="tanks-and-capacities-source" class="text-gray-800">{{ source.name }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="mb-6">
+                {{ form.capacity.label_tag }}
+                {{ form.capacity }}
+                {% if form.capacity.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.capacity.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            {% if details.other_sequence_flow %}
+            <div class="mb-6">
+                {{ form.sequence_flow.label_tag }}
+                {{ form.other_sequence_flow }}
+                {% if form.other_sequence_flow.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.other_sequence_flow.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="mb-6">
+                {{ form.sequence_flow.label_tag }}
+                {{ form.sequence_flow }}
+                {% if form.sequence_flow.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.sequence_flow.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            <div class="mb-6 other-sequence-flow hidden">
+                {{ form.other_sequence_flow.label_tag }}
+                {{ form.other_sequence_flow }}
+                {% if form.other_sequence_flow.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.other_sequence_flow.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            <div class="mb-6">
+                {{ form.technology_type.label_tag }}
+                {{ form.technology_type }}
+                {% if form.technology_type.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ form.technology_type.errors.as_text }}</p>
+                {% endif %}
+            </div>
+        </fieldset>   
+        {% if water_treatment_details.treatment_method == 'STP' %}                  
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "wastewater_treatment_STP" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; left: 0;">Previous</a>
+        </div>
+        {% elif water_treatment_details.treatment_method == 'ETP' %}               
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "wastewater_treatment_ETP" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; left: 0;">Previous</a>
+        </div>
+        {% else %}                  
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "wastewater_treatment_Others" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; left: 0;">Previous</a>
+        </div>
+        {% endif %}
+        {% if details %}
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "water_quality_profile" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</a>
+        </div>
+        {% else %}
+        <div class="text-center mt-5" style="position: relative;">
+            <button type="submit" class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</button>
+        </div>
+        {% endif %}    
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addSourceButton = document.getElementById('add-source');
+        const dynamicSourceFields = document.getElementById('dynamic-source-fields');
+    
+        addSourceButton.addEventListener('click', function() {
+            const newInput = document.createElement('input');
+            newInput.setAttribute('type', 'text');
+            newInput.setAttribute('name', 'other_sources');
+            newInput.setAttribute('placeholder', 'Enter other source name');
+            newInput.classList.add('block', 'w-full', 'px-3', 'py-2', 'border', 'rounded-md');
+    
+            dynamicSourceFields.appendChild(newInput);
+        });
+
+        const sequenceFlowField = document.querySelector('#{{ form.sequence_flow.id_for_label }}');
+        const otherSequenceFlowContainer = document.querySelector('.other-sequence-flow');
+    
+        sequenceFlowField.addEventListener('change', function() {
+            otherSequenceFlowContainer.classList.toggle('hidden', sequenceFlowField.value !== 'Others');
+        });
+
+    });
+</script>
+
+
+{% endblock %}

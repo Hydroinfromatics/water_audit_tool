@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 bg-light">
+    <div class="w-full">
+        <h2 class="text-center text-3xl font-semibold text-blue-600 mb-8">Fresh Water Sources</h2>
+        <p class="text-sm text-gray-700 mb-4">
+            Click on the water source buttons to add information about each source. Fill in the details for daily consumption and cost for the selected sources. You can add multiple sources as needed.
+        </p>
+        
+        <div class="flex flex-wrap -mx-4">
+            <div class="w-full md:w-1/2 px-4 mb-8">
+                <form method="POST" action="" class="max-w-xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+                    {% csrf_token %}
+                    <h3 class="text-lg font-semibold text-blue-500 mb-6">Add Sources</h3>
+                    <div class="flex flex-wrap -mx-2 mb-6">
+                        <div class="px-2 w-full">
+                            <button type="button" onclick="addInput('Borewell Water', this)" class="btn btn-info mb-4 w-full" value="Borewell Water">Borewell Water</button>
+
+                            <button type="button" onclick="addInput('Tanker water', this)" class="btn btn-info mb-4 w-full" value="Tanker water">Tanker water</button>
+                            <button type="button" onclick="addInput('Metro/corporation Water', this)" class="btn btn-info mb-4 w-full" value="Metro/corporation Water">Metro/corporation Water</button>
+                            <button type="button" onclick="addInput('Rainwater', this)" class="btn btn-info mb-4 w-full" value="Rainwater">Rainwater</button>
+                            <button type="button" onclick="addInput('Others', this)" class="btn btn-info mb-4 w-full" value="Others">Others</button>
+                        </div>
+                        <div class="px-2 w-full">
+                            <div id="inputs"></div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="w-full md:w-1/2 px-4 mb-8">
+                <div class="max-w-xl bg-white p-8 rounded-lg shadow-xl border border-gray-200 relative">
+                    {% if all_sources|length %}
+                        <a href="{% url 'delete_source_water_profile' %}" class="btn btn-danger mb-4 absolute right-0 top-0 m-2">Reset</a>
+                    {% endif %}
+                    <h3 class="text-lg font-semibold text-blue-500 mb-6">Existing Water Sources</h3>
+
+                    {% if all_sources|length %}
+                        <ul class="list-group">
+                            {% for source in all_sources %}
+                                <li class="list-group-item flex justify-between items-center">
+                                    <span>{{ source.source_name }}</span>
+                                    <span class="bg-gray-500 text-white px-2 py-2 border rounded">{{ source.source_daily_consumption }} kl | ₹ {{ source.source_water_cost }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-secondary">No Sources added yet.</p>
+                    {% endif %}
+                </div>       
+            </div>
+        </div>
+
+        <div class="flex justify-between mt-8">
+            <a href="{% url 'basic_details' %}" class="btn btn-primary px-5">Previous</a>
+            <a href="{% url 'tanks_capacities' %}" class="btn btn-primary px-5">Next</a>
+        </div>
+    </div>
+</div>
+<script>
+    function addInput(buttonValue, buttonElement) {
+        // Generate a unique ID for the input group based on the button value and a random number for "Others"
+        const uniqueSuffix = buttonValue === 'Others' ? Math.random().toString(36).substr(2, 9) : '';
+        const inputGroupId = `input-group-${buttonValue.replace(/\s+/g, '-').toLowerCase()}-${uniqueSuffix}`;
+    
+        // If it's not the "Others" button, check if the group already exists and toggle its visibility
+        if (buttonValue !== 'Others') {
+            const existingInputGroup = document.getElementById(inputGroupId);
+            if (existingInputGroup) {
+                // Toggle the visibility of the existing input group
+                existingInputGroup.style.display = existingInputGroup.style.display === 'none' ? 'block' : 'none';
+                return; 
+            }
+        }
+        // Create a new input group because it does not exist or "Others" button was clicked
+        const inputGroup = document.createElement('div');
+        inputGroup.setAttribute('id', inputGroupId); // Set the ID for the input group
+        inputGroup.classList.add('mb-4');
+        inputGroup.innerHTML = `
+            ${buttonValue === 'Others' ? `
+            <label class="block text-gray-700 text-sm font-bold mb-2">Other Source Name</label>
+            <input type="text" name="other_source_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            ` : ''}
+            <label class="block text-gray-700 text-sm font-bold mb-2">${buttonValue} Consumption (KL)</label>
+            <input type="number" name="source_daily_consumption" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="0" required>
+            <label class="block text-gray-700 text-sm font-bold mb-2">${buttonValue} Cost ₹</label>
+            <input type="number" name="source_water_cost" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="0" required>
+            <input type="hidden" name="source_name" value="${buttonValue}">
+        `;
+    
+        // Set initial display style to 'block'
+        inputGroup.style.display = 'block';
+    
+        // Insert the new input group after the button in the DOM
+        buttonElement.parentNode.insertBefore(inputGroup, buttonElement.nextSibling);
+    }
+    
+    
+    
+</script>
+
+{% endblock %}

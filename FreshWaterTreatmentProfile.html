@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 bg-light">
+    <div class="w-full">
+        <h2 class="text-center text-3xl font-semibold text-blue-600 mb-8">Fresh Water Treatment Methods</h2>
+        <p class="text-gray-400">
+            <strong>How to fill this form?</strong>         
+        </p>
+        <p class="text-gray-600">
+            On the left-hand side, update the different methods with their sequence numbers.
+            Right hand side can be used to view the existing treatment methods.
+        </p>    
+        <div class="flex flex-wrap justify-between pt-5" style="position: relative;">
+            <div class="w-full md:w-1/2 lg:w-1/2 pr-0 md:pr-4 mb-8">
+                <form method="POST" action="" style="position: relative;" class="form-container1 max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+                    {% csrf_token %}
+                    <h3 class="text-lg font-semibold text-blue-500 mb-6">Add Treatment Methods</h3>
+                    <div class="mb-6">
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <span class="text-danger custom-error">{{ form.name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div id="other-sources-container" class="mb-6 rounded-lg">
+                        <label for="other_sources" class="block text-sm font-medium text-brown-800 mb-2">
+                            Other Freshwater Treatment Methods:
+                        </label>
+                        <button type="button" id="add-source" class="btn btn-info mb-4">Add More Method</button>
+                        <div id="dynamic-source-fields"></div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="w-full md:w-1/2 lg:w-1/2 pr-0 md:pr-4 mb-8">
+                <div id="details-display"
+                class="max-w-full md:max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+                    <div style="position:relative">
+                    <h3 class="text-lg font-semibold text-blue-500 mb-6">Existing Treatment Methods</h3>
+                    {% if all_treatment_methods|length %}
+                    <a href="{% url 'delete_fresh_water_treatment_profile' %}" class="btn btn-danger mb-4" style="position: absolute; right: 0; top:0;">Reset</a>
+                    {% endif %}
+                    </div>
+                    {% if all_treatment_methods|length %}
+                        <ul class="list-group">
+                            {% for method_name in all_treatment_methods %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ method_name.name }}</span>
+                                    <span class="badge bg-primary">{{ treatment_method.sequence_number }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-secondary mb-4">No treatment methods added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>    
+    <div class="text-center mt-5" style="position: relative;">
+        <a href="{% url 'tanks_capacities' %}" class="btn btn-primary px-5" style="position: absolute; bottom: 0; left: 0;">Previous</a>
+    </div>
+    <div class="text-center mt-5" style="position: relative;">
+        <a href="{% url 'fresh_water_treatment_profile_details' %}" class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</a>
+    </div> 
+
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addSourceButton = document.getElementById('add-source');
+        const dynamicSourceFields = document.getElementById('dynamic-source-fields');
+    
+        addSourceButton.addEventListener('click', function() {
+            const newInput = document.createElement('input');
+            newInput.setAttribute('type', 'text');
+            newInput.setAttribute('name', 'other_sources');
+            newInput.setAttribute('placeholder', 'Enter other source name');
+            newInput.classList.add('block', 'w-full', 'px-3', 'py-2', 'border', 'rounded-md');
+    
+            dynamicSourceFields.appendChild(newInput);
+        });
+    });
+</script>
+{% endblock %}
+</body>
+</html>

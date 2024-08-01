@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h3 class="text-center text-3xl font-semibold text-blue-600 mb-8">Boiler Consumption</h3>
+    
+    <form method="POST" action='' >
+        {% if details %}
+        <div class="text-center my-2 p-3" style="position: relative;">
+            <a href='{% url "delete_boiler_consumption" %}' class="btn btn-danger mb-4 mr-2" style="position: absolute; top: 0; right:0;">Reset</a>
+        </div>
+        {% endif %}
+        {% csrf_token %}
+        {% if details %}
+        <fieldset disabled="disabled" class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl border border-gray-200  form-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {% else %}
+        <fieldset class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl border border-gray-200  form-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {% endif %}
+        {% if not details %}
+            <div class="mb-6">
+                {{ consumption_form.boiler_source.label_tag }}
+                {{ consumption_form.boiler_source }}
+                {% if consumption_form.boiler_source.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.boiler_source.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            <div id="other-sources-container" class="mb-6 border border-gray-300 p-2 rounded-lg">
+                <label for="other_sources" class="block text-sm font-medium text-gray-800 mb-2">
+                    Other Water Sources:
+                </label>
+                <button type="button" id="add-source" class="btn btn-info mb-4">Add Source</button>
+                <div id="dynamic-source-fields"></div>
+            </div>
+        {% else %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Water Sources</h3>
+                <div class="bg-white shadow rounded-lg p-4">
+                    {% for source in sources %}
+                        <div class="py-2 px-4 border-b border-gray-200">
+                            <p class="text-gray-800">{{ source.name }}</p> <!-- assuming 'name' is a field on the source object -->
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>  
+        {% endif %}      
+            <div class="mb-6">
+                {{ consumption_form.steam_recovery.label_tag }}
+                {{ consumption_form.steam_recovery }}
+                {% if consumption_form.steam_recovery.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.steam_recovery.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6 recovery-rate hidden">
+                {{ consumption_form.recovery_rate.label_tag }}
+                {{ consumption_form.recovery_rate }}
+                {% if consumption_form.recovery_rate.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.recovery_rate.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            {% if details and if_steam == '2' %}
+            <div class="mb-6">
+                {{ consumption_form.recovery_rate.label_tag }}
+                {{ consumption_form.recovery_rate }}
+                {% if consumption_form.recovery_rate.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.recovery_rate.errors.as_text }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            <div class="mb-6">
+                {{ consumption_form.boiler_units.label_tag }}
+                {{ consumption_form.boiler_units }}
+                {% if consumption_form.boiler_units.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.boiler_units.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                {{ consumption_form.pre_treatment_boiler.label_tag }}
+                {{ consumption_form.pre_treatment_boiler }}
+                {% if consumption_form.pre_treatment_boiler.errors %}
+                <p class="text-red-600 text-xs italic mt-1">{{ consumption_form.pre_treatment_boiler.errors.as_text }}</p>
+                {% endif %}
+            </div>
+        </fieldset>                     
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "laundry_consumption" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; left: 0;">Previous</a>
+        </div>
+        {% if details and all_treatment_methods %}
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "boiler_treatment_method" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</a>
+        </div>
+        {% elif details and not all_treatment_methods %}
+        <div class="text-center mt-5" style="position: relative;">
+            <a href='{% url "add_boiler" %}' class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</a>
+        </div>
+        {% else %}
+        <div class="text-center mt-5" style="position: relative;">
+            <button type="submit" class="btn btn-primary px-5" style="position: absolute; bottom: 0; right: 0;">Next</button>
+        </div>
+        {% endif %}    
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const recoveryRateField = document.querySelector('#{{ consumption_form.steam_recovery.id_for_label }}');
+    const recoveryRateContainer = document.querySelector('.recovery-rate');
+
+    recoveryRateField.addEventListener('change', function() {
+        recoveryRateContainer.classList.toggle('hidden', recoveryRateField.value !== '2');
+    }); 
+    
+    const addSourceButton = document.getElementById('add-source');
+    const dynamicSourceFields = document.getElementById('dynamic-source-fields');
+
+    addSourceButton.addEventListener('click', function() {
+        const newInput = document.createElement('input');
+        newInput.setAttribute('type', 'text');
+        newInput.setAttribute('name', 'other_sources');
+        newInput.setAttribute('placeholder', 'Enter other source name');
+        newInput.classList.add('block', 'w-full', 'px-3', 'py-2', 'border', 'rounded-md');
+
+        dynamicSourceFields.appendChild(newInput);
+    });
+});
+
+</script>
+
+{% endblock %}
