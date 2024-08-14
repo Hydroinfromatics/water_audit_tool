@@ -141,5 +141,6 @@ The application has been deployed to Render. The deployment process involves set
 ## Contributors
 
 - [Arohan Paul]()
+- [Gurudev Murugan]()
 - [Viraj Sharma]()
 - [Manaswita Mandal]()
